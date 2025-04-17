@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const extraSectionSchema = new mongoose.Schema({
   paragraph: String,
-  // imageUrl: String,
-  imageUrl: [String],
+  imageUrl: String,
+  // imageUrl: [String],
 });
 
 const blogSchema = new mongoose.Schema({

@@ -40,36 +40,36 @@ const createBlog = async (req, res) => {
         const extraSectionsParsed = JSON.parse(extraSections);
         const extraSectionsWithImages = [];
 
-        // for (let i = 0; i < extraSectionsParsed.length; i++) {
-        //     const paragraph = extraSectionsParsed[i].paragraph;
-        //     const imageFile = extraImages[i];
-        //     let imageUrl = '';
-
-        //     if (imageFile) {
-        //         imageUrl = await uploadToCloudinary(imageFile.buffer);
-        //     }
-
-        //     extraSectionsWithImages.push({ paragraph, imageUrl });
-        // }
-
-
         for (let i = 0; i < extraSectionsParsed.length; i++) {
             const paragraph = extraSectionsParsed[i].paragraph;
+            const imageFile = extraImages[i];
+            let imageUrl = '';
 
-            // Filtrar todas las imágenes correspondientes a esta sección
-            const sectionImages = req.files[`extraImages-${i}`] || [];
-
-            const imageUrls = [];
-            for (const img of sectionImages) {
-                const url = await uploadToCloudinary(img.buffer);
-                imageUrls.push(url);
+            if (imageFile) {
+                imageUrl = await uploadToCloudinary(imageFile.buffer);
             }
 
-            extraSectionsWithImages.push({
-                paragraph,
-                imageUrl: imageUrls, // ahora es un array
-            });
+            extraSectionsWithImages.push({ paragraph, imageUrl });
         }
+
+
+        // for (let i = 0; i < extraSectionsParsed.length; i++) {
+        //     const paragraph = extraSectionsParsed[i].paragraph;
+
+        //     // Filtrar todas las imágenes correspondientes a esta sección
+        //     const sectionImages = req.files[`extraImages-${i}`] || [];
+
+        //     const imageUrls = [];
+        //     for (const img of sectionImages) {
+        //         const url = await uploadToCloudinary(img.buffer);
+        //         imageUrls.push(url);
+        //     }
+
+        //     extraSectionsWithImages.push({
+        //         paragraph,
+        //         imageUrl: imageUrls, // ahora es un array
+        //     });
+        // }
 
 
         const blog = new Blog({
