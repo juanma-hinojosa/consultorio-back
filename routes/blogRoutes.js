@@ -9,7 +9,8 @@ const upload = require('../middleware/multer');
 const uploadFields = upload.fields([
     { name: 'mainImage', maxCount: 1 },
     { name: 'contentImages', maxCount: 10 },
-    { name: 'extraImages', maxCount: 10 },
+    { name: /^extraImages-\d+$/ }
+    // { name: 'extraImages', maxCount: 10 }
 ]);
 
 // Rutas del blog

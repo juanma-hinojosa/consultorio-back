@@ -40,17 +40,37 @@ const createBlog = async (req, res) => {
         const extraSectionsParsed = JSON.parse(extraSections);
         const extraSectionsWithImages = [];
 
+        // for (let i = 0; i < extraSectionsParsed.length; i++) {
+        //     const paragraph = extraSectionsParsed[i].paragraph;
+        //     const imageFile = extraImages[i];
+        //     let imageUrl = '';
+
+        //     if (imageFile) {
+        //         imageUrl = await uploadToCloudinary(imageFile.buffer);
+        //     }
+
+        //     extraSectionsWithImages.push({ paragraph, imageUrl });
+        // }
+
+
         for (let i = 0; i < extraSectionsParsed.length; i++) {
             const paragraph = extraSectionsParsed[i].paragraph;
-            const imageFile = extraImages[i];
-            let imageUrl = '';
 
-            if (imageFile) {
-                imageUrl = await uploadToCloudinary(imageFile.buffer);
+            // Filtrar todas las imágenes correspondientes a esta sección
+            const sectionImages = req.files[`extraImages-${i}`] || [];
+
+            const imageUrls = [];
+            for (const img of sectionImages) {
+                const url = await uploadToCloudinary(img.buffer);
+                imageUrls.push(url);
             }
 
-            extraSectionsWithImages.push({ paragraph, imageUrl });
+            extraSectionsWithImages.push({
+                paragraph,
+                imageUrl: imageUrls, // ahora es un array
+            });
         }
+
 
         const blog = new Blog({
             title,
@@ -137,13 +157,27 @@ const updateBlog = async (req, res) => {
 
             for (let i = 0; i < extraSectionsParsed.length; i++) {
                 const paragraph = extraSectionsParsed[i].paragraph;
-                let imageUrl = blog.extraSections?.[i]?.imageUrl || '';
+                // let imageUrl = blog.extraSections?.[i]?.imageUrl || '';
 
-                if (extraImages[i]) {
-                    imageUrl = await uploadToCloudinary(extraImages[i].buffer);
+                // if (extraImages[i]) {
+                //     imageUrl = await uploadToCloudinary(extraImages[i].buffer);
+                // }
+
+                // updatedExtraSections.push({ paragraph, imageUrl });
+                const sectionImages = req.files[`extraImages-${i}`] || [];
+
+                let imageUrls = blog.extraSections?.[i]?.imageUrl || [];
+
+                if (sectionImages.length > 0) {
+                    imageUrls = [];
+                    for (const img of sectionImages) {
+                        const url = await uploadToCloudinary(img.buffer);
+                        imageUrls.push(url);
+                    }
                 }
 
-                updatedExtraSections.push({ paragraph, imageUrl });
+                updatedExtraSections.push({ paragraph, imageUrl: imageUrls });
+
             }
 
             blog.extraSections = updatedExtraSections;
