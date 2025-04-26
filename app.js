@@ -21,4 +21,10 @@ app.get('/', (req, res) => {
 const flyerRoutes = require('./routes/flyerRoutes');
 app.use('/api', flyerRoutes);
 
+const appointmentRoutes = require('./routes/appointmentRoutes');
+app.use('/api/appointments', appointmentRoutes);
+
+const specialtyRoutes = require('./routes/specialtyRoutes');
+app.use('/api/specialties', specialtyRoutes);
+
 module.exports = app;
