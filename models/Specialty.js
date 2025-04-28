@@ -10,6 +10,8 @@ const SpecialtySchema = new mongoose.Schema({
   subtitle: String,
   description: String,
   image: String,
+  practices: [String], // <<--- NUEVO: lista de prácticas
+  videoUrl: String,     // <<--- NUEVO: URL del video de YouTube (o iframe si preferís)
   availableSlots: [SlotSchema]
 });
 
