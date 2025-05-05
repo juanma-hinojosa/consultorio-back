@@ -52,26 +52,6 @@ const createBlog = async (req, res) => {
             extraSectionsWithImages.push({ paragraph, imageUrl });
         }
 
-
-        // for (let i = 0; i < extraSectionsParsed.length; i++) {
-        //     const paragraph = extraSectionsParsed[i].paragraph;
-
-        //     // Filtrar todas las imágenes correspondientes a esta sección
-        //     const sectionImages = req.files[`extraImages-${i}`] || [];
-
-        //     const imageUrls = [];
-        //     for (const img of sectionImages) {
-        //         const url = await uploadToCloudinary(img.buffer);
-        //         imageUrls.push(url);
-        //     }
-
-        //     extraSectionsWithImages.push({
-        //         paragraph,
-        //         imageUrl: imageUrls, // ahora es un array
-        //     });
-        // }
-
-
         const blog = new Blog({
             title,
             intro,
@@ -110,16 +90,98 @@ const deleteBlog = async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar blog' });
     }
 };
+
+// const updateBlog = async (req, res) => {
+//     try {
+//         const blogId = req.params.id;
+//         const {
+//             title,
+//             intro,
+//             category,
+//             contentParagraph,
+//             extraSections
+//         } = req.body;
+
+//         const mainImage = req.files['mainImage']?.[0];
+//         const contentImages = req.files['contentImages'] || [];
+//         const extraImages = req.files['extraImages'] || [];
+
+//         const blog = await Blog.findById(blogId);
+//         if (!blog) return res.status(404).json({ message: 'Blog no encontrado' });
+
+//         // Actualizar campos de texto
+//         blog.title = title;
+//         blog.intro = intro;
+//         blog.category = category;
+//         blog.contentParagraph = contentParagraph;
+
+//         // Reemplazar imagen principal si llega una nueva
+//         if (mainImage) {
+//             const mainImageUrl = await uploadToCloudinary(mainImage.buffer);
+//             blog.mainImageUrl = mainImageUrl;
+//         }
+
+//         // Reemplazar imágenes del contenido si se suben nuevas
+//         if (contentImages.length > 0) {
+//             const contentImagesUrls = [];
+//             for (const img of contentImages) {
+//                 const url = await uploadToCloudinary(img.buffer);
+//                 contentImagesUrls.push(url);
+//             }
+//             blog.contentImagesUrls = contentImagesUrls;
+//         }
+
+//         // Actualizar secciones extra
+//         if (extraSections) {
+//             const extraSectionsParsed = JSON.parse(extraSections);
+//             const updatedExtraSections = [];
+
+//             for (let i = 0; i < extraSectionsParsed.length; i++) {
+//                 const paragraph = extraSectionsParsed[i].paragraph;
+//                 // let imageUrl = blog.extraSections?.[i]?.imageUrl || '';
+
+//                 // if (extraImages[i]) {
+//                 //     imageUrl = await uploadToCloudinary(extraImages[i].buffer);
+//                 // }
+
+//                 // updatedExtraSections.push({ paragraph, imageUrl });
+//                 const sectionImages = req.files[`extraImages-${i}`] || [];
+
+//                 let imageUrls = blog.extraSections?.[i]?.imageUrl || [];
+
+//                 if (sectionImages.length > 0) {
+//                     imageUrls = [];
+//                     for (const img of sectionImages) {
+//                         const url = await uploadToCloudinary(img.buffer);
+//                         imageUrls.push(url);
+//                     }
+//                 }
+
+//                 updatedExtraSections.push({ paragraph, imageUrl: imageUrls });
+
+//             }
+
+//             blog.extraSections = updatedExtraSections;
+//         }
+
+//         const updated = await blog.save();
+//         res.status(200).json(updated);
+//     } catch (err) {
+//         console.error('Error al actualizar blog:', err);
+//         res.status(500).json({ error: 'Error al actualizar el blog' });
+//     }
+// };
+
+
+
 const updateBlog = async (req, res) => {
     try {
         const blogId = req.params.id;
-        const {
-            title,
-            intro,
-            category,
-            contentParagraph,
-            extraSections
-        } = req.body;
+        const { title, intro, category, contentParagraph, extraSections } = req.body;
+
+        if (!title || !intro || !category || !contentParagraph) {
+            return res.status(400).json({ error: 'Faltan campos requeridos' });
+        }
 
         const mainImage = req.files['mainImage']?.[0];
         const contentImages = req.files['contentImages'] || [];
@@ -128,19 +190,16 @@ const updateBlog = async (req, res) => {
         const blog = await Blog.findById(blogId);
         if (!blog) return res.status(404).json({ message: 'Blog no encontrado' });
 
-        // Actualizar campos de texto
         blog.title = title;
         blog.intro = intro;
         blog.category = category;
         blog.contentParagraph = contentParagraph;
 
-        // Reemplazar imagen principal si llega una nueva
         if (mainImage) {
             const mainImageUrl = await uploadToCloudinary(mainImage.buffer);
             blog.mainImageUrl = mainImageUrl;
         }
 
-        // Reemplazar imágenes del contenido si se suben nuevas
         if (contentImages.length > 0) {
             const contentImagesUrls = [];
             for (const img of contentImages) {
@@ -150,34 +209,31 @@ const updateBlog = async (req, res) => {
             blog.contentImagesUrls = contentImagesUrls;
         }
 
-        // Actualizar secciones extra
         if (extraSections) {
-            const extraSectionsParsed = JSON.parse(extraSections);
-            const updatedExtraSections = [];
+            let extraSectionsParsed = [];
+            try {
+                extraSectionsParsed = JSON.parse(extraSections);
+            } catch (err) {
+                return res.status(400).json({ error: 'Error al procesar las secciones extra' });
+            }
 
+            const updatedExtraSections = [];
             for (let i = 0; i < extraSectionsParsed.length; i++) {
                 const paragraph = extraSectionsParsed[i].paragraph;
-                // let imageUrl = blog.extraSections?.[i]?.imageUrl || '';
-
-                // if (extraImages[i]) {
-                //     imageUrl = await uploadToCloudinary(extraImages[i].buffer);
-                // }
-
-                // updatedExtraSections.push({ paragraph, imageUrl });
                 const sectionImages = req.files[`extraImages-${i}`] || [];
-
-                let imageUrls = blog.extraSections?.[i]?.imageUrl || [];
+                let imageUrls = [];
 
                 if (sectionImages.length > 0) {
-                    imageUrls = [];
                     for (const img of sectionImages) {
                         const url = await uploadToCloudinary(img.buffer);
                         imageUrls.push(url);
                     }
+                } else {
+                    // Si no hay imágenes, asegúrate de que imageUrl sea un string vacío, no un array.
+                    imageUrls = '';
                 }
 
                 updatedExtraSections.push({ paragraph, imageUrl: imageUrls });
-
             }
 
             blog.extraSections = updatedExtraSections;
@@ -187,9 +243,11 @@ const updateBlog = async (req, res) => {
         res.status(200).json(updated);
     } catch (err) {
         console.error('Error al actualizar blog:', err);
-        res.status(500).json({ error: 'Error al actualizar el blog' });
+        res.status(500).json({ error: 'Error al actualizar el blog', details: err.message });
     }
 };
+
+
 
 const getBlogById = async (req, res) => {
     try {
